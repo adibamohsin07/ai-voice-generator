@@ -1,0 +1,22 @@
+{
+  "name": "ai-voice-generator-elevenlabs",
+  "version": "1.0.0",
+  "description": "Secure AI Voice Generator web application using ElevenLabs API and Netlify Serverless Functions",
+  "main": "script.js",
+  "scripts": {
+    "start": "netlify dev",
+    "dev": "netlify dev",
+    "serve": "python -m http.server 8000"
+  },
+  "keywords": [
+    "elevenlabs",
+    "ai-voice-generator",
+    "text-to-speech",
+    "tts",
+    "netlify-functions",
+    "serverless",
+    "vanilla-js"
+  ],
+  "author": "B.Tech Student Developer",
+  "license": "MIT"
+}

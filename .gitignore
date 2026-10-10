@@ -1,0 +1,19 @@
+# Environment Variables (CRITICAL: Never commit your real API key!)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Node.js dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Netlify dev cache & temporary files
+.netlify/
+
+# Operating system files
+.DS_Store
+Thumbs.db

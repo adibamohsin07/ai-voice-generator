@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Voice Generator | ElevenLabs Text to Speech</title>
+  <meta name="description" content="Convert your text into realistic, lifelike speech using the ElevenLabs API and secure Netlify Serverless Functions." />
+
+  <!-- Google Fonts for Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Favicon as SVG soundwave -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238b5cf6'><path d='M12 3v18m-4-14v10m-4-6v2m12-10v18m4-14v10m4-6v2'/></svg>" type="image/svg+xml" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="ambient-glow glow-1"></div>
+  <div class="ambient-glow glow-2"></div>
+  <div class="ambient-glow glow-3"></div>
+
+  <!-- Main Container -->
+  <div class="app-layout">
+    <!-- Header / Navigation Bar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">ElevenVoice</span>
+          <span class="brand-badge">API v1</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-pill" id="backend-status-pill" title="Checking serverless backend connection">
+          <span class="status-dot pulsing"></span>
+          <span id="backend-status-text">Connecting to Serverless API...</span>
+        </div>
+        <button class="btn-ghost" id="open-guide-btn" title="View Setup & Deployment Guide">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          Setup Guide
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Title Section -->
+    <section class="hero-section">
+      <div class="hero-tag">
+        <span class="tag-icon">✨</span>
+        <span>Secure Serverless Text-to-Speech</span>
+      </div>
+      <h1 class="hero-heading">AI Voice Generator</h1>
+      <p class="hero-subtitle">
+        Transform any written text into natural, lifelike human speech using ElevenLabs' neural audio models. 
+        Your API key is protected securely on the serverless backend.
+      </p>
+    </section>
+
+    <!-- Global Alert / Status Banner -->
+    <div id="alert-banner" class="alert-banner hidden" role="alert">
+      <div class="alert-icon" id="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <strong id="alert-title">Notice</strong>
+        <p id="alert-message">Status details here.</p>
+      </div>
+      <button class="alert-close" id="alert-close-btn" aria-label="Dismiss alert">&times;</button>
+    </div>
+
+    <!-- Main Workspace Grid -->
+    <main class="main-card">
+      <!-- Section 1: Text Input -->
+      <div class="input-card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <label for="speech-text" class="card-title">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Text to Convert
+            </label>
+            <span class="card-hint">Type or paste what you want the AI to speak</span>
+          </div>
+
+          <!-- Quick Prompts for Easy Testing -->
+          <div class="prompt-chips-container">
+            <span class="chips-label">Sample prompts:</span>
+            <button type="button" class="prompt-chip" data-text="Welcome to our web application! This audio was synthesized dynamically using ElevenLabs neural voice models and Netlify serverless functions.">
+              👋 Intro
+            </button>
+            <button type="button" class="prompt-chip" data-text="Deep in the quiet forest, the autumn leaves whispered ancient secrets as a gentle breeze swept through the misty canopy.">
+              🌲 Story
+            </button>
+            <button type="button" class="prompt-chip" data-text="Attention everyone! We are thrilled to announce our newest technology innovation launching this weekend. Stay tuned for incredible updates!">
+              🚀 Announcement
+            </button>
+            <button type="button" class="prompt-chip" data-text="The only way to do great work is to love what you do. Keep pushing your boundaries and learning every single day.">
+              💡 Quote
+            </button>
+          </div>
+        </div>
+
+        <div class="textarea-wrapper">
+          <textarea
+            id="speech-text"
+            placeholder="Enter text here to generate lifelike speech (e.g., greetings, stories, announcements)..."
+            maxlength="2500"
+            rows="6"
+          ></textarea>
+        </div>
+
+        <!-- Textarea Footer: Counter, Clear, Paste -->
+        <div class="textarea-footer">
+          <div class="textarea-tools">
+            <button type="button" class="tool-btn" id="paste-text-btn" title="Paste from clipboard">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+              Paste
+            </button>
+            <button type="button" class="tool-btn" id="clear-text-btn" title="Clear text area">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Clear
+            </button>
+          </div>
+
+          <div class="counter-container">
+            <span id="char-count">0</span>
+            <span class="counter-max">/ 2,500 characters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Voice & Model Selection Controls -->
+      <div class="controls-grid">
+        <!-- Voice Dropdown -->
+        <div class="control-box">
+          <div class="control-header">
+            <label for="voice-select" class="control-label">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Select Voice
+            </label>
+            <button type="button" class="refresh-link" id="refresh-voices-btn" title="Reload voices from API">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              Reload
+            </button>
+          </div>
+
+          <div class="select-wrapper">
+            <select id="voice-select" disabled>
+              <option value="" disabled selected>Loading available voices...</option>
+            </select>
+            <div class="select-arrow">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Voice Meta & Preview row -->
+          <div class="voice-meta-row" id="voice-meta-row">
+            <div class="voice-tags" id="voice-tags">
+              <span class="badge-tag">Loading voices...</span>
+            </div>
+            <button type="button" class="preview-audio-btn hidden" id="preview-voice-btn" title="Listen to voice sample">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <span>Preview</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Model Dropdown -->
+        <div class="control-box">
+          <div class="control-header">
+            <label for="model-select" class="control-label">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              TTS Model
+            </label>
+            <span class="info-badge" title="ElevenLabs neural synthesis models">Neural</span>
+          </div>
+
+          <div class="select-wrapper">
+            <select id="model-select">
+              <option value="eleven_multilingual_v2" selected>
+                Eleven Multilingual v2 (High Quality, 29 Languages)
+              </option>
+              <option value="eleven_turbo_v2_5">
+                Eleven Turbo v2.5 (Fast Latency, 32 Languages)
+              </option>
+              <option value="eleven_flash_v2_5">
+                Eleven Flash v2.5 (Fastest ~75ms, Optimized)
+              </option>
+              <option value="eleven_monolingual_v1">
+                Eleven English v1 (Classic English Legacy)
+              </option>
+            </select>
+            <div class="select-arrow">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+          </div>
+
+          <div class="model-description" id="model-description">
+            Best quality for storytelling, audiobooks, and multiple international languages.
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Voice Settings (Collapsible Accordion) -->
+      <div class="accordion-container">
+        <button type="button" class="accordion-toggle" id="toggle-settings-btn" aria-expanded="false">
+          <span class="accordion-title">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            Fine-tune Voice Parameters (Stability, Clarity & Style)
+          </span>
+          <svg class="accordion-chevron" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+
+        <div class="accordion-content hidden" id="settings-panel">
+          <div class="sliders-grid">
+            <!-- Stability Slider -->
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span class="slider-title">Stability</span>
+                <span class="slider-value" id="stability-val">50%</span>
+              </div>
+              <input type="range" id="stability-slider" min="0" max="100" value="50" class="custom-range" />
+              <p class="slider-helper">Higher values make speech steady and predictable. Lower values make it more emotionally expressive.</p>
+            </div>
+
+            <!-- Similarity / Clarity Slider -->
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span class="slider-title">Similarity Boost</span>
+                <span class="slider-value" id="similarity-val">75%</span>
+              </div>
+              <input type="range" id="similarity-slider" min="0" max="100" value="75" class="custom-range" />
+              <p class="slider-helper">Enhances voice fidelity and resemblance to the original speaker persona.</p>
+            </div>
+
+            <!-- Style Exaggeration Slider -->
+            <div class="slider-group">
+              <div class="slider-label-row">
+                <span class="slider-title">Style Exaggeration</span>
+                <span class="slider-value" id="style-val">0%</span>
+              </div>
+              <input type="range" id="style-slider" min="0" max="100" value="0" class="custom-range" />
+              <p class="slider-helper">Amplifies dynamic emotional delivery. Set to 0% for standard clean narration.</p>
+            </div>
+          </div>
+
+          <div class="settings-reset-row">
+            <button type="button" class="btn-text-small" id="reset-settings-btn">
+              Reset Voice Tuning to Defaults
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button Area -->
+      <div class="action-area">
+        <button type="button" class="btn-primary-generate" id="generate-btn">
+          <span class="btn-spinner hidden" id="generate-spinner"></span>
+          <svg class="btn-icon" id="generate-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span id="generate-btn-text">Generate Speech</span>
+        </button>
+        <span class="shortcut-tip">Press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to synthesize</span>
+      </div>
+
+      <!-- Audio Result Player Card -->
+      <div class="audio-result-wrapper hidden" id="audio-result-card">
+        <div class="result-card-header">
+          <div class="result-title-group">
+            <div class="result-indicator-dot"></div>
+            <h3 class="result-title">Generated Audio</h3>
+            <span class="result-badge" id="result-voice-badge">Rachel</span>
+          </div>
+
+          <div class="result-actions">
+            <a id="download-audio-btn" class="btn-download" download="ai-generated-speech.mp3" title="Download generated MP3 file">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download MP3</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Custom Audio Player Deck -->
+        <div class="custom-player">
+          <!-- Hidden Native Audio element -->
+          <audio id="main-audio-player" preload="metadata"></audio>
+
+          <!-- Waveform Visualizer Animation -->
+          <div class="waveform-visualizer" id="waveform-visualizer">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+
+          <!-- Timeline scrubber bar -->
+          <div class="timeline-container">
+            <span class="time-label" id="time-current">0:00</span>
+            <div class="timeline-bar" id="timeline-bar">
+              <div class="timeline-progress" id="timeline-progress"></div>
+              <div class="timeline-handle" id="timeline-handle"></div>
+            </div>
+            <span class="time-label" id="time-duration">0:00</span>
+          </div>
+
+          <!-- Player Controls Bar -->
+          <div class="player-controls">
+            <!-- Play / Pause -->
+            <button type="button" class="btn-play-pause" id="play-pause-btn" aria-label="Play or Pause Audio">
+              <svg id="play-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <svg id="pause-icon" class="hidden" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+            </button>
+
+            <!-- Replay 5s -->
+            <button type="button" class="btn-control-secondary" id="rewind-btn" title="Rewind 5 seconds">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="1 4 1 10 7 10"></polyline>
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+              <span>-5s</span>
+            </button>
+
+            <!-- Forward 5s -->
+            <button type="button" class="btn-control-secondary" id="forward-btn" title="Fast-forward 5 seconds">
+              <span>+5s</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+            </button>
+
+            <!-- Playback Speed -->
+            <div class="speed-control">
+              <button type="button" class="speed-btn" id="speed-btn" title="Playback Speed">1.0x</button>
+            </div>
+
+            <!-- Volume Control -->
+            <div class="volume-container">
+              <button type="button" class="mute-btn" id="mute-btn" aria-label="Mute or Unmute">
+                <svg id="volume-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                </svg>
+              </svg>
+              <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" class="volume-range" aria-label="Volume Slider" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Project Architecture Educational Highlights -->
+    <section class="architecture-grid">
+      <div class="arch-card">
+        <div class="arch-icon-bubble">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        </div>
+        <h4>Zero API Key Leakage</h4>
+        <p>The ElevenLabs API Key stays protected on the Netlify Serverless Backend. It is never exposed to browser source code or developer tools.</p>
+      </div>
+
+      <div class="arch-card">
+        <div class="arch-icon-bubble">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"></polyline>
+            <polyline points="8 6 2 12 8 18"></polyline>
+          </svg>
+        </div>
+        <h4>Clean Vanilla Architecture</h4>
+        <p>Built with pure HTML5, modern CSS3, and ES6+ JavaScript. No bulky frameworks, no external runtime bloat, and fast initial loading.</p>
+      </div>
+
+      <div class="arch-card">
+        <div class="arch-icon-bubble">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+          </svg>
+        </div>
+        <h4>Netlify Serverless Ready</h4>
+        <p>Functions run instantly on AWS Lambda infrastructure via Netlify. Easily deployable by connecting your GitHub repository in 1 click.</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>
+        AI Voice Generator &bull; Powered by 
+        <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer">ElevenLabs API</a> 
+        &amp; Netlify Serverless Functions.
+      </p>
+      <p class="footer-sub">Designed for academic presentation and real-world production deployment.</p>
+    </footer>
+  </div>
+
+  <!-- Setup Guide Modal -->
+  <div class="modal-backdrop hidden" id="guide-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge">B.Tech Student Guide</span>
+          <h2 id="modal-title">How to Run &amp; Deploy This Application</h2>
+        </div>
+        <button type="button" class="modal-close-btn" id="close-guide-btn" aria-label="Close guide">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="guide-step">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <h4>Get Your Free ElevenLabs API Key</h4>
+            <p>Go to <a href="https://elevenlabs.io" target="_blank" rel="noopener noreferrer">elevenlabs.io</a>, sign up or log in, click your profile icon at bottom-left, and select <strong>API Keys</strong>. Copy your API key.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <h4>Configure Locally (Option A)</h4>
+            <p>Create a file named <code>.env</code> in this project folder and write:</p>
+            <pre><code>ELEVENLABS_API_KEY=your_copied_api_key_here</code></pre>
+            <p>Then install Netlify CLI (<code>npm install -g netlify-cli</code>) and run <code>netlify dev</code>. It will launch on <code>http://localhost:8888</code>.</p>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <h4>Deploy to Netlify (Option B - Recommended)</h4>
+            <ol>
+              <li>Push your project code to a GitHub repository.</li>
+              <li>Log in to <a href="https://app.netlify.com" target="_blank" rel="noopener noreferrer">Netlify</a> and click <strong>"Add new site" &rarr; "Import an existing project"</strong>.</li>
+              <li>Select your GitHub repository. Netlify detects <code>netlify.toml</code> automatically.</li>
+              <li>Under <strong>Environment Variables</strong>, add <code>ELEVENLABS_API_KEY</code> with your key value.</li>
+              <li>Click <strong>Deploy site</strong>. Your website goes live with a secure HTTPS URL!</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="guide-note">
+          <strong>🔒 Security Tip:</strong> Never paste your API key directly into <code>script.js</code> or <code>index.html</code>. Because this app uses Netlify functions, only your server can see the key!
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-primary-small" id="modal-got-it-btn">Got it, let's build!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript File -->
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Netlify Configuration for AI Voice Generator
+[build]
+  # Publish directory for static frontend files
+  publish = "."
+  # Functions directory for serverless backend code
+  functions = "netlify/functions"
+
+# Friendly API redirects: allows frontend to call /api/* instead of /.netlify/functions/*
+[[redirects]]
+  from = "/api/voices"
+  to = "/.netlify/functions/voices"
+  status = 200
+
+[[redirects]]
+  from = "/api/generate-speech"
+  to = "/.netlify/functions/generate-speech"
+  status = 200
